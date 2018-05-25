@@ -1,0 +1,38 @@
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+  <a class="navbar-brand" routerLink="/home">
+    <span>CourseVillain</span>
+  </a>
+  <button class="navbar-toggler" (click)="collapse = !collapse" type="button" data-toggle="collapse" data-target="#navbarTogglerDemo02"
+    aria-controls="navbarTogglerDemo02" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+
+  <div class="navbar-collapse" (click)="collapse=true" [hidden]="collapse">
+    <ul class="navbar-nav mr-auto mt-2 mt-lg-0">
+      <li class="nav-item" *ngIf="(authService.loggedIn())">
+        <a [routerLink]="['/dashboard']" class='no-drop nav-link '>Dashboard</a>
+      </li>
+      <li class="nav-item" *ngIf="(authService.loggedIn())">
+        <a [routerLink]="['/profile']" class='no-drop nav-link '>Profile</a>
+      </li>
+    </ul>
+    <ul class="navbar-nav my-2 my-lg-0">
+      <li class="nav-item" *ngIf="!(authService.loggedIn())">
+        <!-- <a (click)="openDialog('login')" class='no-drop nav-link'>Login</a> -->
+        <a class="btn btn-secondary" (click)="openDialog('login')" style="color: #fff;" role="button">Login</a>
+      </li>
+      <li class="nav-item" *ngIf="!(authService.loggedIn())">
+        <a (click)="openDialog('register')" class='no-drop nav-link '>Register</a>
+      </li>
+
+      <li class="nav-item" *ngIf="(authService.loggedIn())">
+        <!-- <a  class='no-drop nav-link '>Logout</a> -->
+        <a class="btn btn-secondary" (click)="onLogoutClick()" href="#" role="button">Logout</a>
+      </li>
+    </ul>
+    <form class="form-inline my-2 my-lg-0">
+      <!-- <input class="form-control mr-sm-2" type="search" placeholder="Search">
+      <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button> -->
+    </form>
+  </div>
+</nav>
