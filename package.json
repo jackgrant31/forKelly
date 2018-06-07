@@ -22,6 +22,7 @@
     "nodemailer": "^4.4.2",
     "passport": "0.4.0",
     "passport-jwt": "3.0.1",
+    "puppeteer": "^1.4.0",
     "shortid": "^2.2.8",
     "typescript": "~2.4.2"
   },

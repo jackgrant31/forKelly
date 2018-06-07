@@ -1,0 +1,96 @@
+#!/usr/bin/env node
+
+const puppeteer = require('puppeteer');
+const moment = require('moment');
+const fs = require('fs');
+const nodemailer = require('nodemailer');
+
+//const URL_TO_SCRAPE = "https://www.coursehero.com/search/results/?search_id=137242617&search_key=c74f84bd3c711e2e37&stx=econ%20210";
+const URL_TO_SCRAPE = "https://www.coursehero.com/search/results/?search_id=137955862&search_key=e257e3714a4693afcc&stx=math%20211%20erau";
+
+let scrape = async () => {
+
+    const browser = await puppeteer.launch({
+        headless: true
+    });
+
+    const page = await browser.newPage();
+
+    await page.setViewport({
+        width: 1366,
+        height: 768
+    });
+
+    await page.goto(URL_TO_SCRAPE);
+
+    await page.waitForSelector('#search_app > div.search_results_wrapper > div > div.search-results_main-header > div.search-results_sort > select').then(() => {
+        // page.click('#list-view_action > i');
+        page.select('#search_app > div.search_results_wrapper > div > div.search-results_main-header > div.search-results_sort > select', 'Most Recent')
+    });
+
+    var resultsArray = [];
+
+    const LIST_RESULTS_SELECTOR = "#search_app > div.search_results_wrapper > div";
+    const LIST_NAME_SELECTOR = '#search_app > div.search_results_wrapper > div > main > div.search-results_results_container.results > div:nth-child(1) > div:nth-child(2) > ul > li:nth-child(INDEX) > div > ul > li.ch_product_document_title > a';
+    const LIST_DATE_SELECTOR = '#search_app > div.search_results_wrapper > div > main > div.search-results_results_container.results > div:nth-child(1) > div:nth-child(2) > ul > li:nth-child(INDEX) > div > ul > li:nth-child(10)';
+    const LENGTH_SELECTOR_CLASS = 'search-results_document_list-item ng-scope';
+
+    console.log("Waiting for results...");
+    await page.waitForSelector(LIST_RESULTS_SELECTOR);
+
+    let listLength = await page.evaluate((sel) => {
+        return document.getElementsByClassName(sel).length;
+    }, LENGTH_SELECTOR_CLASS);
+
+    console.log("Retrieving values for " + listLength + " items!");
+
+    for (let i = 1; i <= listLength; i++) {
+        // change the index for each item in the list
+        let nameSelector = LIST_NAME_SELECTOR.replace("INDEX", i);
+        let dateSelector = LIST_DATE_SELECTOR.replace("INDEX", i);
+
+        let name = await page.evaluate((sel) => {
+            let element = document.querySelector(sel);
+            return element ? element.innerHTML : null;
+        }, nameSelector);
+
+        let uploadDate = await page.evaluate((sel) => {
+            let element = document.querySelector(sel);
+            return element ? element.innerText.trim() : null;
+        }, dateSelector);
+
+        let documentID = await page.evaluate((sel) => {
+            let url = document.querySelector(sel).getAttribute('href').replace('/', '');
+            var urlParams = new URLSearchParams(url);
+            return urlParams.get('id');
+        }, nameSelector);
+
+        resultsArray.push({
+            documentName: name,
+            documentID: documentID,
+            dateUpload: uploadDate,
+            dateCrawled: moment(new Date()).format("MM/DD/YYYY")
+        });
+    }
+
+    browser.close();
+
+    return resultsArray;
+
+};
+
+function uploadDoc(object) {
+    //method stub to upload to the server
+}
+
+scrape().then((value) => {
+    // console.log(value); // Success!
+    console.log("Done...");
+    fs.writeFile("../results.json", JSON.stringify(value, null, 4), function (err) {
+        if (err) {
+            return console.log(err);
+        }
+
+        console.log("The file was saved!");
+    });
+});
