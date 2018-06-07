@@ -1,0 +1,12 @@
+<h2 class="page-header">Create Scanner</h2>
+<form class="form-scanner" (submit)="onCreateSubmit()">
+  <div class="form-group">
+    <label for="Course Name">Course Name</label>
+    <input type="text" class="form-control" placeholder="Enter Course Name" [(ngModel)]="courseName" name="courseName">
+  </div>
+  <div class="form-group">
+    <label for="Course URL">Course URL</label>
+    <input type="text" class="form-control" placeholder="Enter Course URL" [(ngModel)]="courseUrl" name="courseUrl">
+  </div>
+  <input class="btn btn-lg btn-primary" type="submit" value="Create">
+</form>

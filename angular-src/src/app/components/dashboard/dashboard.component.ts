@@ -1,4 +1,6 @@
 import { Component, OnInit } from '@angular/core';
+import { CourseService } from '../../services/course.service';
+
 
 @Component({
   selector: 'app-dashboard',
@@ -7,9 +9,19 @@ import { Component, OnInit } from '@angular/core';
 })
 export class DashboardComponent implements OnInit {
 
-  constructor() { }
+  constructor(private courseService: CourseService) { }
+
+  courses: any = [];
 
   ngOnInit() {
+    this.courseService.getCourses().subscribe(courses => {
+      this.courses = courses.data;
+      console.log(this.courses);
+    },
+     err => {
+       //somethin went wrong
+       console.log(err);
+    });
   }
 
   alert(){

@@ -6,7 +6,6 @@ import { HttpModule } from '@angular/http';
 import {RouterModule, Routes} from '@angular/router';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 
-
 //Components-
 import { AppComponent } from './app.component';
 import { NavbarComponent } from './components/navbar/navbar.component';
@@ -14,6 +13,8 @@ import { LoginComponent } from './components/login/login.component';
 import { RegisterComponent } from './components/register/register.component';
 import { HomeComponent } from './components/home/home.component';
 import { DashboardComponent } from './components/dashboard/dashboard.component';
+import { CreateScannerComponent } from './components/create-scanner/create-scanner.component';
+import { CourseViewComponent } from './components/course-view/course-view.component';
 import { ProfileComponent } from './components/profile/profile.component';
 import { ResetPassComponent } from './components/reset-pass/reset-pass.component';
 import { SubmitPasswordResetComponent } from './components/submit-password-reset/submit-password-reset.component';
@@ -27,6 +28,7 @@ import { DialogsModule } from './components/dialogs/dialogs.module';
 //Services and guards
 import { ValidateService } from './services/validate.service';
 import { AuthService } from './services/auth.service';
+import { CourseService } from './services/course.service';
 import { AuthGuard } from './guards/auth.guard';
 
 //Some components (mat-slide-toggle, mat-slider, matTooltip) rely on HammerJS for gestures.
@@ -52,6 +54,8 @@ const appRoutes: Routes =  [
   {path:'register', component: RegisterComponent},
   {path:'login', component: LoginComponent},
   {path:'dashboard', component: DashboardComponent, canActivate:[AuthGuard]},
+  {path:'course/:courseId', component: CourseViewComponent, canActivate:[AuthGuard]},
+  {path:'create', component: CreateScannerComponent, canActivate:[AuthGuard]},
   {path:'profile', component: ProfileComponent, canActivate:[AuthGuard]},
   {path:'resetpw', component: ResetPassComponent},
   {path:'resetpw/:token', component: SubmitPasswordResetComponent},
@@ -68,6 +72,8 @@ const appRoutes: Routes =  [
     RegisterComponent,
     HomeComponent,
     DashboardComponent,
+    CourseViewComponent,
+    CreateScannerComponent,
     ProfileComponent,
     ResetPassComponent,
     SubmitPasswordResetComponent,
@@ -90,7 +96,7 @@ const appRoutes: Routes =  [
     ServiceWorkerModule.register('/ngsw-worker.js', {enabled: environment.production})
   ],
 
-  providers: [ValidateService, AuthService, AuthGuard,SwUpdateService],
+  providers: [ValidateService, AuthService, CourseService, AuthGuard, SwUpdateService],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

@@ -35,6 +35,7 @@ const app = express();
 
 const users = require('./routes/users');
 const confirmation = require('./routes/confirmation');
+const courses = require('./routes/courses');
 
 //The port number inside of bin/www takes precendence
 // Port Number
@@ -61,9 +62,7 @@ require('./config/passport')(passport);
 
 app.use('/users', users);
 app.use('/confirmation', confirmation);
-
-
-
+app.use('/courses', courses);
 
 // Index Route
 app.get('/', (req, res) => {
