@@ -15,7 +15,7 @@ export class CourseViewComponent implements OnInit {
     private router: Router,
   ) { }
 
-  courses: any = [];
+  documents: any = [];
   courseId: String;
   course: any;
 
@@ -31,7 +31,17 @@ export class CourseViewComponent implements OnInit {
          //somethin went wrong
          console.log(err);
       });
-    })
+
+      this.courseService.getDocuments(this.courseId).subscribe(documents => {
+        this.documents = documents.data;
+        console.log("Got docs: ");
+        console.log(documents);
+      },
+        err => {
+          //somethin went wrong
+          console.log(err);
+        })
+    });
 
     // this.courseService.getCourses().subscribe(courses => {
     //   this.courses = courses.data;
@@ -41,6 +51,11 @@ export class CourseViewComponent implements OnInit {
     //    //somethin went wrong
     //    console.log(err);
     // });
+
+  }
+
+  onReviewClick(document){
+    alert("Worked");
   }
 
   alert(){

@@ -1,53 +1,39 @@
 <div *ngIf="course">
-<h2>{{ course.data.name }}</h2>
-<hr>
-<b>Created by: </b>{{ course.data.creator }}
-<br>
-<b>Search URL: </b>{{ course.data.url }}
-<hr>
-<a [routerLink]="['/dashboard']">Back to Dashboard</a>
+  <h2>{{ course.data.name }}</h2>
+  <hr>
+  <b>Created by: </b>{{ course.data.creator }}
+  <br>
+  <b>Search URL: </b>{{ course.data.url }}
 </div>
 <div *ngIf="!course">
   Sorry, a course does not exist for this ID.
   <br>
   <a [routerLink]="['/dashboard']">Back to Dashboard</a>
 </div>
-
-<!-- <div *ngFor="let course of courses">
-  <div class="card bg-light mb-12" (click)="alert();">
-      <div class="card-body">
-        <div class="row">
-          <div class="col-lg-8 col-sm-6">
-            <h5 class="card-title">{{ course.name }}<br>
-              <small *ngIf="course.lastScan">Scanned {{ course.lastScan }}</small>
-              <small *ngIf="!course.lastScan">No scans have taken place</small>
-            </h5>
-          </div>
-          <div class="col-lg-4 col-sm-6 text-right">
-            <h5>
-              <span *ngIf="course.pending" class="badge badge-primary">{{course.pending}} documents for review</span>
-            </h5>
-          </div>
-        </div>
-      </div>
-    </div>
-    <br>
-</div>
-
-
-<div class="card bg-light mb-12">
-  <div class="card-body">
-    <div class="row">
-      <div class="col-8">
-        <h5 class="card-title">UNIV 101
-          <small>Scanned 05/19/18 at 10:00 PM</small>
-        </h5>
-      </div>
-      <div class="col-4 text-right">
-        <h5>
-          <span class="badge badge-secondary">No documents for review</span>
-        </h5>
-      </div>
-    </div>
-  </div>
-</div> -->
+<hr>
+<br>
+<h4>Pending Review</h4>
+<table class="table table-hover">
+  <thead class="thead-light">
+    <tr>
+      <th scope="col">ID</th>
+      <th scope="col">Upload Date</th>
+      <th scope="col">Discovered Date</th>
+      <th scope="col">Document Name</th>
+      <th scope="col"></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let document of documents">
+      <td>{{ document._id }}</td>
+      <td>{{ document.uploadDate }}</td>
+      <td>{{ document.scanDate }}</td>
+      <td>{{ document.name }}</td>
+      <td>
+        <a [routerLink]="['/submission', course.data._id, document._id]" class="btn btn-secondary btn-sm">Review now</a>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<hr>
+<a [routerLink]="['/dashboard']">Back to Dashboard</a>
