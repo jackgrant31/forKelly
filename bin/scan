@@ -5,106 +5,132 @@ const fs = require('fs');
 const mongoose = require('mongoose');
 const config = require('../config/database');
 const nodeMailer = require('nodemailer');
+const spawn = require('threads').spawn;
 const Course = require('../models/course');
-
+const Document = require('../models/document');
 require('dotenv').config()
-
 mongoose.Promise = require('bluebird');
-
 mongoose.connect(process.env.MONGODB_URI || "mongodb://localhost:27017/auth-template");
-
 // On Connection
 mongoose.connection.on('connected', () => {
     log(1, "Connected to database");
-  });
-  // On Error
-  mongoose.connection.on('error', (err) => {
-    log(0, 'Database error: '+err);
-  });
-
-
+});
+// On Error
+mongoose.connection.on('error', (err) => {
+    log(0, 'Database error: ' + err);
+});
 const URL_TO_SCRAPE = "https://www.coursehero.com/search/results/?search_id=137955862&search_key=e257e3714a4693afcc&stx=math%20211%20erau";
-
-let scrape = async (urlToScrape) => {
-
+let scrape = async (urlToScrape, courseDetails) => {
     log(2, "Launching Puppeteer instance");
     const browser = await puppeteer.launch({
-        args: ['--no-sandbox', '--disable-setuid-sandbox']
+        headless: false,
+        args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage']
     });
-
+    process.on("unhandledRejection", (reason, p) => {
+        // console.error("Unhandled Rejection at: Promise", p, "reason:", reason);
+        log(0, "Unhandled Promise! Likely 0 results from scan... please fix me!");
+        // browser.close();
+    });
     const page = await browser.newPage();
-
     await page.setViewport({
         width: 1366,
         height: 768
     });
-
     log(2, "Navigating to URL " + urlToScrape);
     await page.goto(urlToScrape);
-
     log(2, "Interacting with page");
-    await page.waitForSelector('#search_app > div.search_results_wrapper > div > div.search-results_main-header > div.search-results_sort > select').then(() => {
-        // page.click('#list-view_action > i');
-        page.select('#search_app > div.search_results_wrapper > div > div.search-results_main-header > div.search-results_sort > select', 'Most Recent')
-    });
-
+    //await page.waitForSelector('#search_app > select').then(() => {
+    //page.click('#list-view_action > i');
+    //await page.click('a.filterToggle.hideInPhone').then(()=>{
+    //page.select('a.pill','Most recent');
+    //  page.click('177','560')
+    //});
+    //await page.click('span.filterByChosenLabel');
+    //await page.select('button.sortByOption','Most recent').click();
+    // });
     var resultsArray = [];
-    const LIST_RESULTS_SELECTOR = "#search_app > div.search_results_wrapper > div";
-    const LIST_NAME_SELECTOR = '#search_app > div.search_results_wrapper > div > main > div.search-results_results_container.results > div:nth-child(1) > div:nth-child(2) > ul > li:nth-child(INDEX) > div > ul > li.ch_product_document_title > a';
-    const LIST_DATE_SELECTOR = '#search_app > div.search_results_wrapper > div > main > div.search-results_results_container.results > div:nth-child(1) > div:nth-child(2) > ul > li:nth-child(INDEX) > div > ul > li:nth-child(10)';
-    const LENGTH_SELECTOR_CLASS = 'search-results_document_list-item ng-scope';
+    //const LIST_RESULTS_SELECTOR = ".results-container_column8_phone12";
+    //const LIST_NAME_SELECTOR = '#search_app > div.search_results_wrapper > div > main > div.search-results_results_container.results > div:nth-child(1) > div:nth-child(2) > ul > li:nth-child(INDEX) > div > ul > li.ch_product_document_title > a';
+    //const LIST_DATE_SELECTOR = '#search_app > div.search_results_wrapper > div > main > div.search-results_results_container.results > div:nth-child(1) > div:nth-child(2) > ul > li:nth-child(INDEX) > div > ul > li:nth-child(10)';
+    //const LENGTH_SELECTOR_CLASS = 'search-results_document_list-item ng-scope';
 
+    const LIST_RESULTS_SELECTOR = "#search_app";
+    //const LIST_NAME_SELECTOR = '#search_app > div > div > div:nth-child(2) > div:nth-child(2) > div:nth-child(INDEX) > div:nth-child(1) > h5 > a';
+    const LIST_NAME_SELECTOR = '.resultsItemContainer:nth-child(INDEX) > div > h5.title > a'
+    const LIST_DATE_SELECTOR = '.resultsItemContainer:nth-child(INDEX) > div > div.details > div.excerpt > ul.stats > li.listItem > span.statValue'
+    //const LIST_DATE_SELECTOR = '.resultsContainer_column8_phone12 > .resultsItemContainer > div:nth-child(1) > div.details > div.excerpt > ul.stats > li.listItem > span.statValue';
+    const LENGTH_SELECTOR_CLASS = '.resultsItemContainer ng-scope';
     log(2, "Waiting for results to become available");
     await page.waitForSelector(LIST_RESULTS_SELECTOR);
-
     let listLength = await page.evaluate((sel) => {
-        return document.getElementsByClassName(sel).length;
+        return document.getElementsByClassName('resultsItemContainer').length;
     }, LENGTH_SELECTOR_CLASS);
-
     log(2, "Gathering values for " + listLength + " items");
     for (let i = 1; i <= listLength; i++) {
         // change the index for each item in the list
         let nameSelector = LIST_NAME_SELECTOR.replace("INDEX", i);
         let dateSelector = LIST_DATE_SELECTOR.replace("INDEX", i);
-
         let name = await page.evaluate((sel) => {
             let element = document.querySelector(sel);
             return element ? element.innerHTML : null;
         }, nameSelector);
-
+        log(2, name);
         let uploadDate = await page.evaluate((sel) => {
             let element = document.querySelector(sel);
             return element ? element.innerText.trim() : null;
         }, dateSelector);
-
+        log(2, uploadDate);
         let documentID = await page.evaluate((sel) => {
             let url = document.querySelector(sel).getAttribute('href').replace('/', '');
             var urlParams = new URLSearchParams(url);
             return urlParams.get('id');
         }, nameSelector);
-
         resultsArray.push({
             documentName: name,
             documentID: documentID,
             dateUpload: uploadDate,
             dateCrawled: moment(new Date()).format("MM/DD/YYYY")
         });
+        Document.findById(documentID, function (err, document) {
+            if (err) {
+                console.log("No doc found", err);
+                //return done(err, null);
+            } else if (document && document != null) {
+                console.log("Document with ID " + documentID + " already stored!");
+                console.log(document);
+            } else {
+                console.log("Document with ID " + documentID + " not yet recorded!");
+                let newDocument = new Document({
+                    _id: documentID,
+                    scanId: "1234",
+                    courseId: courseDetails._id,
+                    status: { "reviewed": false, "reported": false},
+                    name: name,
+                    uploadDate: uploadDate,
+                    scanDate: moment(new Date()).format("MM/DD/YYYY")
+                });
+                let document;
+                Document.addDocument(newDocument, (err, document) => {
+                    if (err) {
+                        console.log(err);
+                    } else {
+                        console.log("New document found: adding");
+                    }
+                })
+            }
+        });
     }
-
     browser.close();
-
     return resultsArray;
-
 };
 
 function uploadDoc(object) {
     //method stub to upload to the server
 }
 
-function log(process, message){
+function log(process, message) {
     var color, label, padding = "";
-
-    switch(process) {
+    switch (process) {
         case 0: //error
             color = "\x1b[33m";
             label = " ERROR ";
@@ -125,61 +151,71 @@ function log(process, message){
             label = " REPORTING ";
             break;
     }
-    
-    console.log(color + "["+label+"] \x1b[0m"+padding + message);
+    console.log(color + "[" + label + "] \x1b[0m" + padding + message);
 }
 
-function renderOutput(array, course){
+function renderOutput(array, course) {
     var htmlString = "<html>";
     htmlString += "<h2>CourseVillain Scan Results</h2>";
     htmlString += "<p>Below are the results of the scan for the course with name <b>" + course.name + "</b>.</p>";
-    htmlString += "<p>"+moment(new Date()).format("MM/DD/YYYY")+"</p>";
+    htmlString += "<p>" + moment(new Date()).format("MM/DD/YYYY") + "</p>";
     htmlString += "<br>";
-
-    if(array.length == 0){
+    if (array.length == 0) {
         htmlString += "<hr>No scan results for this scan.</hr>";
     }
-
-    for(var doc of array){
+    for (var doc of array) {
         htmlString += "<hr>";
         htmlString += "<b>Document name: </b>" + doc.documentName + "<br>";
-        htmlString += "<b>Document ID:</b> <a href='https://www.coursehero.com/file/" + doc.documentID + "/'>" +  doc.documentID + "</a>";
+        htmlString += "<b>Document ID:</b> <a href='https://www.coursehero.com/file/" + doc.documentID + "/'>" + doc.documentID + "</a>";
         htmlString += "";
     }
-
     htmlString += "</html>";
-
     return htmlString;
 }
-
+async function asyncForEach(array, callback) {
+    for (let index = 0; index < array.length; index++) {
+        await callback(array[index], index, array)
+    }
+}
 /**
  * Main Function Calls
  */
 log(1, "Launching CourseVillain");
-
 Course.getAll((err, courses) => {
     if (err) throw err;
     if (courses) {
         //what the hell
         //https://stackoverflow.com/questions/14504385/why-cant-you-modify-the-data-returned-by-a-mongoose-query-ex-findbyid -> 
         //https://stackoverflow.com/questions/7503450/how-do-you-turn-a-mongoose-document-into-a-plain-object
-        var modCourses = courses.map(function(model) { return model.toObject(); });
-
-        modCourses.forEach(course => {
-            log(2, "Running scan for " + course.name + " on " + course.url);
-            scrape(course.url).then((value) => {
-                emailResults(value, course);
-            });
+        var modCourses = courses.map(function (model) {
+            return model.toObject();
         });
+        const start = async () => {
+            await asyncForEach(modCourses, async (course) => {
+                console.log("Going to scrape..." + course.name);
+                await scrape(course.url, course).then((value) => {
+                    console.log("Count of results: ");
+                    console.log(value.length);
+                });
+                console.log("Done with " + course.name);
+            })
+            console.log('Done')
+            process.exit()
+        }
+        start();
+        // modCourses.forEach(course => {
+        //     log(2, "Running scan for " + course.name + " on " + course.url);
+        //     scrape(course.url).then((value) => {
+        //         emailResults(value, course);
+        //     });
+        // });
     }
 });
 
-function emailResults(value, course){
+function emailResults(value, course) {
     // console.log(value); // Success!
     log(2, "Scanning complete");
-
     log(3, "Compiling results");
-
     log(3, "Sending report");
     let transporter = nodeMailer.createTransport({
         host: 'smtp.gmail.com',
@@ -190,32 +226,25 @@ function emailResults(value, course){
             pass: 'Worldwide1!'
         }
     });
-
     let mailOptions = {
         from: '"CourseVillain" <erau.content.notification@gmail.com>', // sender address
-        to: "erau.content.notification@gmail.com",     // list of receivers
+        to: "erau.content.notification@gmail.com", // list of receivers
         subject: "CourseVillain Results for " + moment(new Date()).format("MM/DD/YYYY"), // Subject line
         text: "Notification", // plain text body
         html: renderOutput(value, course) // html body
     };
-
     transporter.sendMail(mailOptions, (error, info) => {
         if (error) {
             return console.log(error);
         }
-
-        log(3, "Message sent: " + info.response); 
+        log(3, "Message sent: " + info.response);
         process.exit()
-   
     });
-
-    log(3, "Done ✔️");    
-
+    log(3, "Done ✔️");
     // fs.writeFile("../results.json", JSON.stringify(value, null, 4), function (err) {
     //     if (err) {
     //         return console.log(err);
     //     }
-
     //     console.log("The file was saved!");
     // });
 }
