@@ -11,13 +11,13 @@ export class CourseService {
   user: any;
 
   constructor(private http: Http,
-              private router:Router) {
-      // this.isDev = true;  // Change to false before deployment
+              private router:Router,
+              ) {
+                this.loadToken();
       }
 
   getCourses() {
     let headers = new Headers();
-    this.loadToken();
     headers.append('Authorization', this.authToken);
     headers.append('Content-Type', 'application/json');
     return this.http.get('courses/all', {headers: headers })
@@ -26,7 +26,6 @@ export class CourseService {
 
   getCourse(courseId){
     let headers = new Headers();
-    this.loadToken();
     headers.append('Authorization', this.authToken);
     headers.append('Content-Type', 'application/json');
     return this.http.get('courses/' + courseId, {headers: headers})
@@ -40,11 +39,13 @@ export class CourseService {
     return this.http.post('courses/create', scanner, {headers: headers}).map(res=> res.json());
   }
 
-  storeUserData(token, user) {
-    localStorage.setItem('id_token', token);
-    localStorage.setItem('user', JSON.stringify(user));
-    this.authToken = token;
-    this.user = user;
+  getDocuments(courseId){
+    console.log("Got documents request from component, calling API to return docs to caller");
+    let headers = new Headers();
+    headers.append('Authorization', this.authToken);
+    headers.append('Content-Type', 'application/json');
+    return this.http.get('courses/' + courseId + '/documents/', {headers: headers})
+      .map(res => res.json());
   }
 
   loadToken() {
@@ -52,14 +53,4 @@ export class CourseService {
     this.authToken = token;
   }
 
-  loggedIn() {
-    return tokenNotExpired('id_token');
-  }
-
-  logout() {
-    this.authToken = null;
-    this.user = null;
-    localStorage.clear();
-    this.router.navigate(['']);
-  }
 }
