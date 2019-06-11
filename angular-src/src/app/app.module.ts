@@ -15,6 +15,7 @@ import { HomeComponent } from './components/home/home.component';
 import { DashboardComponent } from './components/dashboard/dashboard.component';
 import { CreateScannerComponent } from './components/create-scanner/create-scanner.component';
 import { CourseViewComponent } from './components/course-view/course-view.component';
+import { SubmissionComponent } from './components/submission/submission.component';
 import { ProfileComponent } from './components/profile/profile.component';
 import { ResetPassComponent } from './components/reset-pass/reset-pass.component';
 import { SubmitPasswordResetComponent } from './components/submit-password-reset/submit-password-reset.component';
@@ -29,6 +30,7 @@ import { DialogsModule } from './components/dialogs/dialogs.module';
 import { ValidateService } from './services/validate.service';
 import { AuthService } from './services/auth.service';
 import { CourseService } from './services/course.service';
+import { DocumentService } from './services/document.service';
 import { AuthGuard } from './guards/auth.guard';
 
 //Some components (mat-slide-toggle, mat-slider, matTooltip) rely on HammerJS for gestures.
@@ -55,6 +57,7 @@ const appRoutes: Routes =  [
   {path:'login', component: LoginComponent},
   {path:'dashboard', component: DashboardComponent, canActivate:[AuthGuard]},
   {path:'course/:courseId', component: CourseViewComponent, canActivate:[AuthGuard]},
+  {path:'submission/:courseId/:documentId', component: SubmissionComponent, canActivate:[AuthGuard]},
   {path:'create', component: CreateScannerComponent, canActivate:[AuthGuard]},
   {path:'profile', component: ProfileComponent, canActivate:[AuthGuard]},
   {path:'resetpw', component: ResetPassComponent},
@@ -73,6 +76,7 @@ const appRoutes: Routes =  [
     HomeComponent,
     DashboardComponent,
     CourseViewComponent,
+    SubmissionComponent,
     CreateScannerComponent,
     ProfileComponent,
     ResetPassComponent,
@@ -96,7 +100,7 @@ const appRoutes: Routes =  [
     ServiceWorkerModule.register('/ngsw-worker.js', {enabled: environment.production})
   ],
 
-  providers: [ValidateService, AuthService, CourseService, AuthGuard, SwUpdateService],
+  providers: [ValidateService, AuthService, CourseService, DocumentService, AuthGuard, SwUpdateService],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
