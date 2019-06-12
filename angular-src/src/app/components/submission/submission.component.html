@@ -1,17 +1,9 @@
-<div *ngIf="!submission">
-  <div class="banner" style="padding:15px; text-align:center;">
-    <div class="banner-content">
-      <h3>Do you want to flag this page for copyright violations?</h3>
-      <button (click)="submitRequest()" type="button" class="btn btn-outline-success">Request takedown</button>
-      <button (click)="ignoreDocument()" type="button" class="btn btn-outline-danger">Ignore document</button>
-    </div>
+<div class="banner" style="padding:15px; text-align:center;">
+  <div class="banner-content">
+    <h3>Do you want to flag this page for copyright violations?</h3>
+    <button (click)="submitRequest()" type="button" class="btn btn-outline-success">Request takedown</button>
+    <button (click)="ignoreDocument()" type="button" class="btn btn-outline-danger">Ignore document</button>
   </div>
-  <a [href]='sanitizer.bypassSecurityTrustResourceUrl(document.link)' target="_new">Open page in new tab</a>
-  <iframe [src]='sanitizer.bypassSecurityTrustResourceUrl(document.link)' height="500" width="100%"></iframe>
-  <!---src={{submission.data.document}}-->
 </div>
-<div *ngIf="submission">
-  You are all caught up on submitting copyright claims for this course!
-  <br>
-  <a [routerLink]="['/dashboard']">Back to Dashboard</a>
-</div>
+<a [href]='sanitizer.bypassSecurityTrustResourceUrl(document.link)' target="_new">Open page in new tab</a>
+<iframe [src]='sanitizer.bypassSecurityTrustResourceUrl(document.link)' height="500" width="100%"></iframe>
