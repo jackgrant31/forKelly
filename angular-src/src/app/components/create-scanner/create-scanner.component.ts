@@ -2,7 +2,6 @@ import { Component, OnInit } from '@angular/core';
 import { CourseService } from '../../services/course.service';
 import { Router } from '@angular/router';
 import { FlashMessagesService } from 'angular2-flash-messages';
-import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'create-scanner',
@@ -12,30 +11,20 @@ import { AuthService } from '../../services/auth.service';
 export class CreateScannerComponent implements OnInit {
   courseName: String;
   courseUrl: String;
-  username: any;
 
   constructor(
     private courseService: CourseService,
     private router: Router,
-    private flashMessage: FlashMessagesService,
-    private authService: AuthService) { }
+    private flashMessage: FlashMessagesService) { }
 
   ngOnInit() {
-    this.authService.getProfile().subscribe(profile => {
-      this.username = profile.user.username;
-      console.log(profile.user.username);
-    },
-     err => {
-       this.flashMessage.show(err, {cssClass: 'alert-danger', timeout: 3000});
-    });
   }
 
   onCreateSubmit(){
-    
     const course = {
       name: this.courseName,
       url: this.courseUrl,
-      creator: this.username,
+      creator: "aUser",
       frequency: "12",
     }
 

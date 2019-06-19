@@ -12,7 +12,7 @@ export class CourseViewComponent implements OnInit {
   constructor(
     private courseService: CourseService,
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
   ) { }
 
   documents: any = [];
@@ -25,7 +25,7 @@ export class CourseViewComponent implements OnInit {
       console.log('Got a token: ', this.courseId);
       this.courseService.getCourse(this.courseId).subscribe(course => {
         console.log(course);
-        this.course = course; 
+        this.course = course;
       },
        err => {
          //somethin went wrong

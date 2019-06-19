@@ -25,9 +25,7 @@ export class DocumentService {
     headers.append('Authorization', this.authToken);
     headers.append('Content-Type', 'application/json');
     return this.http.post('courses/' + courseId + '/document/' + document._id, {
-      reported: reported,
-      name: document.name,
-      URL: document.link
+      reported: reported
     }, {
       headers: headers
     }).map(res => res.json());
