@@ -224,12 +224,14 @@ Course.getAll((err, courses) => {
     }
 });
 
+var smtpTransport = require('nodemailer-smtp-transport');
+
 function emailResults(value, course, email) {
     // console.log(value); // Success!
     log(2, "Scanning complete");
     log(3, "Compiling results");
     log(3, "Sending report");
-    let transporter = nodeMailer.createTransport({
+    var transporter = nodeMailer.createTransport(smtpTransport({
         service: 'gmail',
         host: 'smtp.gmail.com',
         port: 465,
@@ -239,7 +241,7 @@ function emailResults(value, course, email) {
             user: 'erau.content.notification@gmail.com',
             pass: 'Worldwide1!'
         }
-    });
+    }));
     let mailOptions = {
         from: '"CourseVillain" <erau.content.notification@gmail.com>', // sender address
         to: email, // list of receivers
