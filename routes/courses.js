@@ -162,7 +162,9 @@ async function asyncSelenium(URLdoc, namedoc) {
     const assert = require('assert');
     const {Builder, Key, By, until} = require('selenium-webdriver');
         let driver;
-            driver = await new Builder().forBrowser('chrome').build();
+            driver = await new Builder().forBrowser('chrome')
+            .setChromeOptions(new chrome.Options().headless())
+            .build();
         // Next, we will write steps for our test. 
         // For the element ID, you can find it by open the browser inspect feature.
         

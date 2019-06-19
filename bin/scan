@@ -24,7 +24,7 @@ const URL_TO_SCRAPE = "https://www.coursehero.com/search/results/?search_id=1379
 let scrape = async (urlToScrape, courseDetails) => {
     log(2, "Launching Puppeteer instance");
     const browser = await puppeteer.launch({
-        headless: false,
+        headless: true,
         args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage']
     });
     process.on("unhandledRejection", (reason, p) => {
