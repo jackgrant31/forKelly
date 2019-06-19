@@ -229,11 +229,11 @@ function emailResults(value, course, email) {
     log(2, "Scanning complete");
     log(3, "Compiling results");
     log(3, "Sending report");
-    let transporter = nodeMailer.createTransport("SMTP",{
-        //host: 'smtp.gmail.com',
-        //port: 465,
-        //.secure: true,
-        service: "Gmail",
+    let transporter = nodeMailer.createTransport({
+        host: 'smtp.gmail.com',
+        port: 465,
+        .secure: true,
+        // service: "Gmail",
         auth: {
             user: 'erau.content.notification@gmail.com',
             pass: 'Worldwide1!'
