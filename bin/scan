@@ -230,6 +230,7 @@ function emailResults(value, course, email) {
     log(3, "Compiling results");
     log(3, "Sending report");
     let transporter = nodeMailer.createTransport({
+        service: 'gmail',
         host: 'smtp.gmail.com',
         port: 465,
         secure: true,
