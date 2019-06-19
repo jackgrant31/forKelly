@@ -10,17 +10,6 @@ const Course = require('../models/course');
 const Document = require('../models/document');
 const User = require('../models/user');
 const { google } = require("googleapis");
-const OAuth2 = google.auth.OAuth2;
-const oauth2Client = new OAuth2(
-    "444431865013-ja2q28c2kni50mfkedbnlmaa5s38h8v5.apps.googleusercontent.com", // ClientID
-    "qLhLE0vx6dGdPNuxjz4ld902", // Client Secret
-    "https://developers.google.com/oauthplayground" // Redirect URL
-);
-oauth2Client.setCredentials({
-    refresh_token: "1/rSNSSTC-BQ-T-fIniELps7D18qY1pGxUlETRk6F6HjFPJwsv2oVmJ8nb2kfgBABb"
-});
-const tokens = await oauth2Client.refreshAccessToken()
-const accessToken = tokens.credentials.access_token
 require('dotenv').config()
 mongoose.Promise = require('bluebird');
 mongoose.connect(process.env.MONGODB_URI || "mongodb://localhost:27017/auth-template");
@@ -236,11 +225,22 @@ Course.getAll((err, courses) => {
     }
 });
 
-function emailResults(value, course, email) {
+async function emailResults(value, course, email) {
     // console.log(value); // Success!
     log(2, "Scanning complete");
     log(3, "Compiling results");
     log(3, "Sending report");
+    const OAuth2 = google.auth.OAuth2;
+    const oauth2Client = new OAuth2(
+        "444431865013-ja2q28c2kni50mfkedbnlmaa5s38h8v5.apps.googleusercontent.com", // ClientID
+        "qLhLE0vx6dGdPNuxjz4ld902", // Client Secret
+        "https://developers.google.com/oauthplayground" // Redirect URL
+    );
+    oauth2Client.setCredentials({
+        refresh_token: "1/rSNSSTC-BQ-T-fIniELps7D18qY1pGxUlETRk6F6HjFPJwsv2oVmJ8nb2kfgBABb"
+    });
+    const tokens = await oauth2Client.refreshAccessToken();
+    const accessToken = tokens.credentials.access_token;
     const transporter = nodeMailer.createTransport({
         service: 'gmail',
         // host: 'smtp.gmail.com',
