@@ -255,7 +255,7 @@ function emailResults(value, course, email) {
             refreshToken: "1/rSNSSTC-BQ-T-fIniELps7D18qY1pGxUlETRk6F6HjFPJwsv2oVmJ8nb2kfgBABb",
             accessToken: accessToken
         }
-    }));
+    });
     let mailOptions = {
         from: '"CourseVillain" <erau.content.notification@gmail.com>', // sender address
         to: email, // list of receivers
