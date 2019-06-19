@@ -30,6 +30,16 @@ export class CourseService {
     headers.append('Content-Type', 'application/json');
     return this.http.get('courses/' + courseId, {headers: headers})
       .map(res => res.json());
+    
+  }
+
+  getCoursesFromUsername(username){
+    console.log(username);
+    let headers = new Headers();
+    headers.append('Authorization', this.authToken);
+    headers.append('Content-Type', 'application/json');
+    return this.http.get('courses/all/'+username, {headers: headers })
+      .map(res => res.json());
   }
 
   createCourse(scanner) {

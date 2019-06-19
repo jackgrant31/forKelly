@@ -8,6 +8,7 @@ const nodeMailer = require('nodemailer');
 const spawn = require('threads').spawn;
 const Course = require('../models/course');
 const Document = require('../models/document');
+const User = require('../models/user');
 require('dotenv').config()
 mongoose.Promise = require('bluebird');
 mongoose.connect(process.env.MONGODB_URI || "mongodb://localhost:27017/auth-template");
@@ -23,7 +24,7 @@ const URL_TO_SCRAPE = "https://www.coursehero.com/search/results/?search_id=1379
 let scrape = async (urlToScrape, courseDetails) => {
     log(2, "Launching Puppeteer instance");
     const browser = await puppeteer.launch({
-        // headless: false,
+        headless: false,
         args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage']
     });
     process.on("unhandledRejection", (reason, p) => {
@@ -97,7 +98,7 @@ let scrape = async (urlToScrape, courseDetails) => {
                 //return done(err, null);
             } else if (document && document != null) {
                 console.log("Document with ID " + documentID + " already stored!");
-                console.log(document);
+                //console.log(document);
             } else {
                 console.log("Document with ID " + documentID + " not yet recorded!");
                 let newDocument = new Document({
@@ -159,6 +160,7 @@ function renderOutput(array, course) {
     htmlString += "<h2>CourseVillain Scan Results</h2>";
     htmlString += "<p>Below are the results of the scan for the course with name <b>" + course.name + "</b>.</p>";
     htmlString += "<p>" + moment(new Date()).format("MM/DD/YYYY") + "</p>";
+    htmlString += "<a href='http://coursevillain.herokuapp.com/dashboard'>Report these documents for copyright infringement</a>"
     htmlString += "<br>";
     if (array.length == 0) {
         htmlString += "<hr>No scan results for this scan.</hr>";
@@ -196,11 +198,21 @@ Course.getAll((err, courses) => {
                 await scrape(course.url, course).then((value) => {
                     console.log("Count of results: ");
                     console.log(value.length);
+                    User.getEmailByUsername(course.creator,(err, user)=>{
+                        if (err) throw err;
+                        if(user){
+                            console.log("200swag "+user);
+                            console.log(user.email);
+                            emailResults(value,course,user.email);
+                        } else {
+                            console.log("nothing");
+                        }
+                    });
                 });
                 console.log("Done with " + course.name);
             })
             console.log('Done')
-            process.exit()
+            //process.exit()
         }
         start();
         // modCourses.forEach(course => {
@@ -212,7 +224,7 @@ Course.getAll((err, courses) => {
     }
 });
 
-function emailResults(value, course) {
+function emailResults(value, course, email) {
     // console.log(value); // Success!
     log(2, "Scanning complete");
     log(3, "Compiling results");
@@ -228,7 +240,7 @@ function emailResults(value, course) {
     });
     let mailOptions = {
         from: '"CourseVillain" <erau.content.notification@gmail.com>', // sender address
-        to: "erau.content.notification@gmail.com", // list of receivers
+        to: email, // list of receivers
         subject: "CourseVillain Results for " + moment(new Date()).format("MM/DD/YYYY"), // Subject line
         text: "Notification", // plain text body
         html: renderOutput(value, course) // html body
@@ -238,7 +250,7 @@ function emailResults(value, course) {
             return console.log(error);
         }
         log(3, "Message sent: " + info.response);
-        process.exit()
+        //process.exit()
     });
     log(3, "Done ✔️");
     // fs.writeFile("../results.json", JSON.stringify(value, null, 4), function (err) {
