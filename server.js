@@ -33,7 +33,7 @@ mongoose.connection.on('error', (err) => {
 
 const app = express();
 
-const users = require('./routes/users');
+const users = require('./routes/users.js');
 const confirmation = require('./routes/confirmation');
 const courses = require('./routes/courses');
 
