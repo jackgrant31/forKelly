@@ -67,6 +67,7 @@ export class SubmissionComponent implements OnInit {
           cssClass: 'alert alert-success',
           timeout: 5000
         });
+        console.log("status of thing"+res.complete);
         this.router.navigate(['course/', this.courseId]);
       }, err => {
         err = err.json();

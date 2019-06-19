@@ -154,6 +154,8 @@ async function waitForButton() {
     await driver.findElement(By.xpath('/html/body/div[6]/button')).click();
 }
 
+var SeleniumWorked = false;
+
 async function asyncSelenium(URLdoc, namedoc) {
     // Imports and Await statements and all your code here 
     require('chromedriver');
@@ -161,8 +163,8 @@ async function asyncSelenium(URLdoc, namedoc) {
     var runAgain = false;
     const assert = require('assert');
     const {Builder, Key, By, until} = require('selenium-webdriver');
-        let driver;
-            driver = await new Builder().forBrowser('chrome')
+    const chrome = require('selenium-webdriver/chrome');
+        let driver = await new Builder().forBrowser('chrome')
             .setChromeOptions(new chrome.Options().headless())
             .build();
         // Next, we will write steps for our test. 
@@ -226,6 +228,7 @@ async function asyncSelenium(URLdoc, namedoc) {
                     runAgain = true;
                 } else {
                     console.log("success"+isPresent);
+                    SeleniumWorked = true;
                     //successful
                 }
                 if (runAgain){
@@ -252,6 +255,8 @@ router.post('/:tagId/document/:docId', passport.authenticate('jwt', {
             "reported": req.body.reported
         };
 
+        console.log("status of documen is"+req.body.reported);
+
         if(req.body.reported == true){
             console.log("Submitting takedown form request...");
             console.log(req.body.URL);
@@ -269,12 +274,14 @@ router.post('/:tagId/document/:docId', passport.authenticate('jwt', {
         Document.updateDocumentReviewStatus(req.params.docId, updatedState, (err, document) => {
             if (err) res.status(500).json({
                 success: false,
-                msg: 'Failed to update document'
+                msg: 'Failed to update document', 
+                complete: SeleniumWorked
             });
             else {
                 res.status(200).json({
                     success: true,
-                    msg: "Successfully updated document"
+                    msg: "Successfully updated document",
+                    complete: SeleniumWorked
                 });
                 // });
             }
