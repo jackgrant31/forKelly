@@ -19,7 +19,7 @@
     "express": "4.16.2",
     "googleapis": "^40.0.0",
     "jsonwebtoken": "8.1.0",
-    "mongoose": "^5.0.6",
+    "mongoose": "^5.7.5",
     "morgan": "^1.9.0",
     "node-env-file": "^0.1.8",
     "nodemailer": "^4.6.5",
