@@ -8,7 +8,7 @@
     "start": "node ./bin/www"
   },
   "dependencies": {
-    "@angular/cli": "1.6.3",
+    "@angular/cli": "14.2.9",
     "@angular/compiler-cli": "^5.0.0",
     "bcryptjs": "2.4.3",
     "bluebird": "^3.5.1",
